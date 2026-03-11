@@ -1995,7 +1995,7 @@
 	});
 
 	const header = document.createElement("div");
-	header.textContent = `Web Panel by Hann Universe  v${VERSION}`;
+	header.textContent = `Web Panel`;
 	Object.assign(header.style, {
 		padding: "10px",
 		cursor: "move",
