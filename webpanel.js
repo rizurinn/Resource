@@ -1911,6 +1911,44 @@
 		},
 	});
 
+	// =========================================================
+	// TEMA & GAYA (DARK/LIGHT MODE & FONT DEFAULT)
+	// =========================================================
+	const styleEl = document.createElement("style");
+	styleEl.textContent = `
+		:root {
+			--wp-bg: #ffffff;
+			--wp-hdr: #f1f5f9;
+			--wp-txt: #0f172a;
+			--wp-border: #cbd5e1;
+			--wp-content: #f8fafc;
+			--wp-btn: #e2e8f0;
+			--wp-btn-txt: #0f172a;
+			--wp-code: #047857; /* Hijau gelap untuk teks output */
+		}
+		@media (prefers-color-scheme: dark) {
+			:root {
+				--wp-bg: #1e1e1e;
+				--wp-hdr: #2a2a2a;
+				--wp-txt: #ffffff;
+				--wp-border: #555555;
+				--wp-content: #111111;
+				--wp-btn: #444444;
+				--wp-btn-txt: #ffffff;
+				--wp-code: #0f0; /* Hijau terang untuk teks output */
+			}
+		}
+		#web-panel-dev, #web-panel-dev button, #web-panel-dev input {
+			font-family: system-ui, -apple-system, sans-serif !important;
+		}
+		#web-panel-dev textarea, 
+		#web-panel-dev .monospace-text,
+		#network-search-results * {
+			font-family: monospace !important;
+		}
+	`;
+	document.head.appendChild(styleEl);
+
 	function makeBtn(label, bg) {
 		const b = document.createElement("button");
 		b.textContent = label;
@@ -1919,42 +1957,49 @@
 			padding: "8px",
 			border: "none",
 			cursor: "pointer",
-			background: bg || "#444",
-			color: "#fff",
+			background: bg || "var(--wp-btn)",
+			color: bg ? "#fff" : "var(--wp-btn-txt)",
 			borderRadius: "6px",
-			fontFamily: "monospace",
-			fontSize: "11px",
+			fontSize: "12px",
 			transition: "all 0.2s",
 		});
 		return b;
 	}
 
+	// =========================================================
+	// RESPONSIVE SIZING (MOBILE VS DESKTOP)
+	// =========================================================
+	const isMobile = window.innerWidth <= 600;
+	const pWidth = isMobile ? (window.innerWidth - 30) + "px" : "450px";
+	const pHeight = isMobile ? "400px" : "400px";
+	const pLeft = isMobile ? "15px" : "50px";
+	const pTop = isMobile ? "50px" : "100px";
+
 	const panel = document.createElement("div");
 	panel.id = "web-panel-dev";
 	Object.assign(panel.style, {
 		position: "fixed",
-		top: "100px",
-		left: "50px",
-		width: "450px",
-		height: "400px",
-		background: "#1e1e1e",
-		color: "#fff",
-		border: "1px solid #555",
+		top: pTop,
+		left: pLeft,
+		width: pWidth,
+		height: pHeight,
+		background: "var(--wp-bg)",
+		color: "var(--wp-txt)",
+		border: "1px solid var(--wp-border)",
 		borderRadius: "12px",
 		zIndex: "999999999",
-		fontFamily: "monospace",
 		boxShadow: "0 5px 20px rgba(0,0,0,0.5)",
 		display: "flex",
 		flexDirection: "column",
-		transition: "left .25s ease",
+		transition: "left .25s ease, top .25s ease",
 	});
 
 	const header = document.createElement("div");
-	header.textContent = `Web Panel`;
+	header.textContent = `Web Panel by Hann Universe  v${VERSION}`;
 	Object.assign(header.style, {
 		padding: "10px",
 		cursor: "move",
-		background: "#2a2a2a",
+		background: "var(--wp-hdr)",
 		fontWeight: "bold",
 		touchAction: "none",
 		display: "flex",
@@ -1962,6 +2007,7 @@
 		alignItems: "center",
 		borderRadius: "12px 12px 0 0",
 		userSelect: "none",
+		color: "var(--wp-txt)"
 	});
 
 	const minimizeBtn = document.createElement("span");
@@ -1986,13 +2032,12 @@
 	textarea.placeholder = "Welcome To Web Panel by Hann Universe\n\nSelect a data source below:";
 	Object.assign(textarea.style, {
 		flex: "1",
-		background: "#111",
-		color: "#0f0",
+		background: "var(--wp-content)",
+		color: "var(--wp-code)",
 		border: "none",
 		padding: "10px",
 		resize: "none",
 		fontSize: "12px",
-		fontFamily: "monospace",
 		display: "none",
 		outline: "none",
 	});
@@ -2010,8 +2055,8 @@
 		display: "flex",
 		gap: "5px",
 		padding: "8px",
-		background: "#252525",
-		borderBottom: "1px solid #444",
+		background: "var(--wp-hdr)",
+		borderBottom: "1px solid var(--wp-border)",
 	});
 
 	const searchInput = document.createElement("input");
@@ -2020,11 +2065,10 @@
 	Object.assign(searchInput.style, {
 		flex: "1",
 		padding: "8px",
-		background: "#111",
-		color: "#fff",
-		border: "1px solid #444",
+		background: "var(--wp-content)",
+		color: "var(--wp-txt)",
+		border: "1px solid var(--wp-border)",
 		borderRadius: "4px",
-		fontFamily: "monospace",
 		fontSize: "12px",
 		outline: "none",
 	});
@@ -2032,12 +2076,12 @@
 	const searchExecBtn = makeBtn("Search", "#1565c0");
 	searchExecBtn.style.flex = "0 0 60px";
 
-	const caseSensitiveBtn = makeBtn("Aa", "#444");
+	const caseSensitiveBtn = makeBtn("Aa", null);
 	caseSensitiveBtn.style.flex = "0 0 35px";
 	caseSensitiveBtn.title = "Case sensitive";
 	let caseSensitive = false;
 
-	const regexBtn = makeBtn(".*", "#444");
+	const regexBtn = makeBtn(".*", null);
 	regexBtn.style.flex = "0 0 35px";
 	regexBtn.title = "Use regex";
 	let useRegex = false;
@@ -2048,7 +2092,7 @@
 	Object.assign(searchResults.style, {
 		flex: "1",
 		overflow: "auto",
-		background: "#111",
+		background: "var(--wp-content)",
 		padding: "5px",
 		fontSize: "11px"
 	});
@@ -2056,10 +2100,10 @@
 	const searchStatus = document.createElement("div");
 	Object.assign(searchStatus.style, {
 		padding: "5px 10px",
-		background: "#1e1e1e",
-		borderTop: "1px solid #444",
+		background: "var(--wp-bg)",
+		borderTop: "1px solid var(--wp-border)",
 		fontSize: "11px",
-		color: "#888",
+		color: "var(--wp-txt)",
 	});
 	searchStatus.textContent = "Ready to search";
 
@@ -2071,8 +2115,9 @@
 		display: "flex",
 		gap: "4px",
 		padding: "4px",
-		background: "#1e1e1e",
-		flexWrap: "wrap"
+		background: "var(--wp-bg)",
+		flexWrap: "wrap",
+		borderTop: "1px solid var(--wp-border)"
 	});
 
 	const actionBtnRow = document.createElement("div");
@@ -2080,7 +2125,8 @@
 		display: "none",
 		gap: "4px",
 		padding: "4px",
-		background: "#1e1e1e"
+		background: "var(--wp-bg)",
+		borderTop: "1px solid var(--wp-border)"
 	});
     
 	const searchBtnRow = document.createElement("div");
@@ -2088,12 +2134,13 @@
 		display: "none",
 		gap: "4px",
 		padding: "4px",
-		background: "#1e1e1e"
+		background: "var(--wp-bg)",
+		borderTop: "1px solid var(--wp-border)"
 	});
 
-	const btnSearchBack = makeBtn("Back", "#444");
-	const btnClearSearch = makeBtn("Clear", "#444");
-	const btnCopySearch = makeBtn("Copy Results", "#444");
+	const btnSearchBack = makeBtn("Back", null);
+	const btnClearSearch = makeBtn("Clear", null);
+	const btnCopySearch = makeBtn("Copy Results", null);
 
 	searchBtnRow.append(btnSearchBack, btnClearSearch, btnCopySearch);
     
@@ -2102,16 +2149,17 @@
 		display: "none",
 		gap: "4px",
 		padding: "4px",
-		background: "#1e1e1e"
+		background: "var(--wp-bg)",
+		borderTop: "1px solid var(--wp-border)"
 	});
 
-	const btnNetworkBack = makeBtn("Back", "#444");
-	const btnNetworkClear = makeBtn("Clear", "#444");
+	const btnNetworkBack = makeBtn("Back", null);
+	const btnNetworkClear = makeBtn("Clear", null);
 	const btnNetworkPrev = makeBtn("◀ Prev", "#37474f");
 	const btnNetworkNext = makeBtn("Next ▶", "#37474f");
 	const networkNavCounter = document.createElement("span");
 	Object.assign(networkNavCounter.style, {
-		color: "#aaa",
+		color: "var(--wp-txt)",
 		fontSize: "11px",
 		fontFamily: "monospace",
 		alignSelf: "center",
@@ -2123,9 +2171,9 @@
 
 	networkSearchBtnRow.append(btnNetworkBack, btnNetworkClear, btnNetworkPrev, networkNavCounter, btnNetworkNext);
 
-	const btnBack = makeBtn("Back", "#444");
-	const btnRefresh = makeBtn("Refresh", "#444");
-	const btnCopy = makeBtn("Copy", "#444");
+	const btnBack = makeBtn("Back", null);
+	const btnRefresh = makeBtn("Refresh", null);
+	const btnCopy = makeBtn("Copy", null);
 	const btnDownloadAll = makeBtn("⬇️ Download", "#2e7d32");
 	const btnNetworkSearch = makeBtn("🔍 Search", "#6a1b9a");
 
@@ -2207,7 +2255,6 @@
 		};
 	}
 
-
 	function showNetworkSearchMode() {
 		mainBtnRow.style.display = "none";
 		actionBtnRow.style.display = "none";
@@ -2224,7 +2271,7 @@
 			Object.assign(networkResultsDiv.style, {
 				flex: "1",
 				overflow: "auto",
-				background: "#111",
+				background: "var(--wp-content)",
 				padding: "5px",
 				fontSize: "11px",
 				display: "none"
@@ -2244,14 +2291,14 @@
 
 			if (result.error) {
 				searchStatus.textContent = `Error: ${result.error}`;
-				networkResultsDiv.innerHTML = `<div style="color:#ff4444;padding:20px;text-align:center;">${result.error}</div>`;
+				networkResultsDiv.innerHTML = `<div style="color:var(--wp-error);padding:20px;text-align:center;">${result.error}</div>`;
 				networkNavCounter.textContent = "0 / 0";
 				return;
 			}
 
 			if (result.count === 0) {
 				searchStatus.textContent = `No matches in ${result.total} requests`;
-				networkResultsDiv.innerHTML = '<div style="color:#888;padding:20px;text-align:center;">No matches found</div>';
+				networkResultsDiv.innerHTML = '<div style="color:var(--wp-txt);padding:20px;text-align:center;">No matches found</div>';
 				networkNavCounter.textContent = "0 / 0";
 			} else {
 				searchStatus.textContent = `Found ${result.count} matches in ${result.uniqueRequests} requests`;
@@ -2373,15 +2420,18 @@
 
 	caseSensitiveBtn.onclick = () => {
 		caseSensitive = !caseSensitive;
-		caseSensitiveBtn.style.background = caseSensitive ? "#1565c0" : "#444";
+		caseSensitiveBtn.style.background = caseSensitive ? "#1565c0" : "var(--wp-btn)";
+		caseSensitiveBtn.style.color = caseSensitive ? "#fff" : "var(--wp-btn-txt)";
 	};
 
 	regexBtn.onclick = () => {
 		useRegex = !useRegex;
-		regexBtn.style.background = useRegex ? "#1565c0" : "#444";
+		regexBtn.style.background = useRegex ? "#1565c0" : "var(--wp-btn)";
+		regexBtn.style.color = useRegex ? "#fff" : "var(--wp-btn-txt)";
 	};
 
 	async function performGlobalSearch() {
+		// ... (Kode Logika Global Search sama persis seperti sebelumnya)
 		const query = searchInput.value.trim();
 		if (!query) return;
 
@@ -2389,40 +2439,20 @@
 		searchResults.innerHTML = "";
 
 		const resources = [];
-		document.querySelectorAll("script[src]").forEach((s) => resources.push({
-			type: "JS",
-			url: s.src
-		}));
-		document.querySelectorAll("link[rel='stylesheet']").forEach((s) => resources.push({
-			type: "CSS",
-			url: s.href
-		}));
-		resources.push({
-			type: "HTML",
-			url: location.href
-		});
+		document.querySelectorAll("script[src]").forEach((s) => resources.push({ type: "JS", url: s.src }));
+		document.querySelectorAll("link[rel='stylesheet']").forEach((s) => resources.push({ type: "CSS", url: s.href }));
+		resources.push({ type: "HTML", url: location.href });
 		document.querySelectorAll("script:not([src])").forEach((s, i) => {
-			if (s.textContent.trim()) resources.push({
-				type: "INLINE-JS",
-				url: `inline-script-${i}`,
-				content: s.textContent
-			});
+			if (s.textContent.trim()) resources.push({ type: "INLINE-JS", url: `inline-script-${i}`, content: s.textContent });
 		});
 		document.querySelectorAll("style").forEach((s, i) => {
-			if (s.textContent.trim()) resources.push({
-				type: "INLINE-CSS",
-				url: `inline-style-${i}`,
-				content: s.textContent
-			});
+			if (s.textContent.trim()) resources.push({ type: "INLINE-CSS", url: `inline-style-${i}`, content: s.textContent });
 		});
 
 		const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-		const searchPattern = useRegex ?
-			new RegExp(query, caseSensitive ? "g" : "gi") :
-			new RegExp(escapedQuery, caseSensitive ? "g" : "gi");
+		const searchPattern = useRegex ? new RegExp(query, caseSensitive ? "g" : "gi") : new RegExp(escapedQuery, caseSensitive ? "g" : "gi");
 
-		let totalMatches = 0,
-			searchedCount = 0;
+		let totalMatches = 0, searchedCount = 0;
 		const results = [];
 
 		for (const res of resources) {
@@ -2443,18 +2473,11 @@
 						const start = Math.max(0, matchPos - contextPad);
 						const end = Math.min(line.length, matchPos + matchResult[0].length + contextPad);
 						const snippet = (start > 0 ? "…" : "") + line.substring(start, end) + (end < line.length ? "…" : "");
-						fileMatches.push({
-							line: idx + 1,
-							text: snippet,
-							matchPos: matchPos - start + (start > 0 ? 1 : 0)
-						});
+						fileMatches.push({ line: idx + 1, text: snippet, matchPos: matchPos - start + (start > 0 ? 1 : 0) });
 						totalMatches++;
 					}
 				});
-				if (fileMatches.length) results.push({
-					...res,
-					matches: fileMatches
-				});
+				if (fileMatches.length) results.push({ ...res, matches: fileMatches });
 				searchedCount++;
 				searchStatus.textContent = `Searching... ${searchedCount}/${resources.length} files`;
 			} catch (_) {
@@ -2463,55 +2486,32 @@
 		}
 
 		if (!results.length) {
-			searchResults.innerHTML = '<div style="color:#888;padding:20px;text-align:center;">No matches found</div>';
+			searchResults.innerHTML = '<div style="color:var(--wp-txt);padding:20px;text-align:center;">No matches found</div>';
 		} else {
 			results.forEach((result) => {
 				const fileDiv = document.createElement("div");
 				Object.assign(fileDiv.style, {
-					marginBottom: "12px",
-					border: "1px solid #2a2a2a",
-					borderRadius: "6px",
-					overflow: "hidden",
-					background: "#161616"
+					marginBottom: "12px", border: "1px solid var(--wp-border)", borderRadius: "6px", overflow: "hidden", background: "var(--wp-bg)"
 				});
 
 				const hdr = document.createElement("div");
 				Object.assign(hdr.style, {
-					background: "#212121",
-					padding: "6px 10px",
-					display: "flex",
-					flexDirection: "column",
-					gap: "4px",
-					borderBottom: "1px solid #333",
+					background: "var(--wp-hdr)", padding: "6px 10px", display: "flex", flexDirection: "column", gap: "4px", borderBottom: "1px solid var(--wp-border)",
 				});
 
 				const hdrTop = document.createElement("div");
-				Object.assign(hdrTop.style, {
-					display: "flex",
-					justifyContent: "space-between",
-					alignItems: "center"
-				});
+				Object.assign(hdrTop.style, { display: "flex", justifyContent: "space-between", alignItems: "center" });
 
 				const typeBadge = document.createElement("span");
 				typeBadge.textContent = result.type;
 				Object.assign(typeBadge.style, {
-					fontSize: "9px",
-					fontWeight: "bold",
-					padding: "2px 7px",
-					borderRadius: "3px",
-					letterSpacing: "0.8px",
-					textTransform: "uppercase",
-					background: result.type.includes("CSS") ? "#0d47a1" : result.type.includes("JS") ? "#bf360c" : "#1b5e20",
-					color: "#fff",
+					fontSize: "9px", fontWeight: "bold", padding: "2px 7px", borderRadius: "3px", letterSpacing: "0.8px", textTransform: "uppercase",
+					background: result.type.includes("CSS") ? "#0d47a1" : result.type.includes("JS") ? "#bf360c" : "#1b5e20", color: "#fff",
 				});
 
 				const matchCount = document.createElement("span");
 				matchCount.textContent = result.matches.length + " match" + (result.matches.length > 1 ? "es" : "");
-				Object.assign(matchCount.style, {
-					fontSize: "10px",
-					color: "#f9a825",
-					fontWeight: "bold"
-				});
+				Object.assign(matchCount.style, { fontSize: "10px", color: "#f9a825", fontWeight: "bold" });
 
 				hdrTop.append(typeBadge, matchCount);
 
@@ -2521,21 +2521,10 @@
 				urlEl.href = isInline ? "#" : result.url;
 				if (!isInline) urlEl.target = "_blank";
 				Object.assign(urlEl.style, {
-					fontSize: "10px",
-					color: "#64b5f6",
-					textDecoration: "none",
-					wordBreak: "break-all",
-					fontFamily: "monospace",
-					lineHeight: "1.4",
+					fontSize: "10px", color: "#64b5f6", textDecoration: "none", wordBreak: "break-all", fontFamily: "monospace", lineHeight: "1.4",
 				});
-				urlEl.onmouseover = () => {
-					urlEl.style.textDecoration = "underline";
-					urlEl.style.color = "#90caf9";
-				};
-				urlEl.onmouseout = () => {
-					urlEl.style.textDecoration = "none";
-					urlEl.style.color = "#64b5f6";
-				};
+				urlEl.onmouseover = () => { urlEl.style.textDecoration = "underline"; urlEl.style.color = "#90caf9"; };
+				urlEl.onmouseout = () => { urlEl.style.textDecoration = "none"; urlEl.style.color = "#64b5f6"; };
 
 				hdr.append(hdrTop, urlEl);
 
@@ -2543,56 +2532,32 @@
 				result.matches.forEach((match) => {
 					const matchLine = document.createElement("div");
 					Object.assign(matchLine.style, {
-						padding: "4px 0",
-						borderTop: "1px solid #1a1a1a",
-						fontFamily: "monospace",
-						fontSize: "11px",
-						color: "#ccc",
-						cursor: "pointer",
-						whiteSpace: "pre-wrap",
-						wordBreak: "break-all",
-						lineHeight: "1.6",
-						display: "flex",
-						alignItems: "flex-start",
+						padding: "4px 0", borderTop: "1px solid var(--wp-border)", fontFamily: "monospace", fontSize: "11px", color: "var(--wp-txt)",
+						cursor: "pointer", whiteSpace: "pre-wrap", wordBreak: "break-all", lineHeight: "1.6", display: "flex", alignItems: "flex-start",
 					});
 
 					const lineNum = document.createElement("span");
 					lineNum.textContent = match.line;
 					Object.assign(lineNum.style, {
-						color: "#555",
-						minWidth: "36px",
-						textAlign: "right",
-						paddingRight: "10px",
-						userSelect: "none",
-						flexShrink: "0",
-						borderRight: "1px solid #2a2a2a",
-						marginRight: "10px",
-						paddingTop: "0",
+						color: "var(--wp-txt)", minWidth: "36px", textAlign: "right", paddingRight: "10px", userSelect: "none", flexShrink: "0", borderRight: "1px solid var(--wp-border)", marginRight: "10px", paddingTop: "0", opacity: "0.6"
 					});
 
 					const codeEl = document.createElement("span");
 					let safe = match.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 					try {
-						const pat = useRegex ?
-							new RegExp("(" + query + ")", caseSensitive ? "g" : "gi") :
-							new RegExp("(" + escapedQuery + ")", caseSensitive ? "g" : "gi");
-						safe = safe.replace(pat,
-							'<mark style="background:#f9a825;color:#000;padding:0 2px;border-radius:2px;font-weight:bold;outline:1.5px solid #f57f17;">$1</mark>'
-						);
+						const pat = useRegex ? new RegExp("(" + query + ")", caseSensitive ? "g" : "gi") : new RegExp("(" + escapedQuery + ")", caseSensitive ? "g" : "gi");
+						safe = safe.replace(pat, '<mark style="background:#f9a825;color:#000;padding:0 2px;border-radius:2px;font-weight:bold;outline:1.5px solid #f57f17;">$1</mark>');
 					} catch (_) {}
 					codeEl.innerHTML = safe;
-					Object.assign(codeEl.style, {
-						flex: "1",
-						paddingRight: "8px"
-					});
+					Object.assign(codeEl.style, { flex: "1", paddingRight: "8px" });
 
 					matchLine.append(lineNum, codeEl);
 
-					matchLine.onmouseover = () => matchLine.style.background = "#1c2333";
+					matchLine.onmouseover = () => matchLine.style.background = "var(--wp-hdr)";
 					matchLine.onmouseout = () => matchLine.style.background = "transparent";
 					matchLine.onclick = () => {
 						navigator.clipboard.writeText(match.text);
-						matchLine.style.background = "#1b3a1b";
+						matchLine.style.background = "var(--wp-bg)";
 						setTimeout(() => matchLine.style.background = "transparent", 700);
 					};
 
@@ -2616,9 +2581,10 @@
 	document.body.appendChild(panel);
 	renderPluginButtons();
 
-	let isDrag = false,
-		offsetX = 0,
-		offsetY = 0;
+	// =========================================================
+	// LOGIKA DRAG & DROP (TIDAK NEMPEL PINGGIR LAGI)
+	// =========================================================
+	let isDrag = false, offsetX = 0, offsetY = 0;
 
 	function startDrag(e) {
 		if (e.target === minimizeBtn) return;
@@ -2642,28 +2608,30 @@
 	function endDrag() {
 		if (!isDrag) return;
 		isDrag = false;
-		panel.style.transition = "left .25s ease";
+		panel.style.transition = "left .25s ease, top .25s ease";
+		
 		const rect = panel.getBoundingClientRect();
-		if (rect.left < 30 || window.innerWidth - rect.right < 30) {
-			panel.style.left = rect.left + rect.width / 2 < window.innerWidth / 2 ?
-				-(rect.width - 40) + "px" :
-				(window.innerWidth - 40) + "px";
-		}
+		let newLeft = rect.left;
+		let newTop = rect.top;
+
+		// Hanya memastikan panel tidak bablas keluar layar, TIDAK akan sembunyi ke pinggir lagi
+		if (newLeft < 0) newLeft = 0;
+		if (newTop < 0) newTop = 0;
+		if (newLeft + rect.width > window.innerWidth) newLeft = window.innerWidth - rect.width;
+		if (newTop + rect.height > window.innerHeight) newTop = window.innerHeight - rect.height;
+
+		panel.style.left = newLeft + "px";
+		panel.style.top = newTop + "px";
 	}
 
 	header.addEventListener("mousedown", startDrag);
 	document.addEventListener("mousemove", moveDrag);
 	document.addEventListener("mouseup", endDrag);
-	header.addEventListener("touchstart", startDrag, {
-		passive: false
-	});
-	document.addEventListener("touchmove", moveDrag, {
-		passive: false
-	});
+	header.addEventListener("touchstart", startDrag, { passive: false });
+	document.addEventListener("touchmove", moveDrag, { passive: false });
 	document.addEventListener("touchend", endDrag);
 
-	let minimized = false,
-		prevHeight = panel.style.height;
+	let minimized = false, prevHeight = panel.style.height;
 
 	function toggleMin() {
 		if (!minimized) {
@@ -2695,22 +2663,16 @@
 		if (now - lastTap < 300) toggleMin();
 		lastTap = now;
 	});
-	
+
+	// =========================================================
+	// FITUR RESIZE PANEL (Tuas di Pojok Kanan Bawah)
+	// =========================================================
 	const resizeHandle = document.createElement("div");
 	Object.assign(resizeHandle.style, {
-		position: "absolute",
-		bottom: "0",
-		right: "0",
-		width: "25px",
-		height: "25px",
-		cursor: "nwse-resize",
-		background: "linear-gradient(135deg, transparent 50%, #666 50%)", // Visual segitiga
-		borderBottomRightRadius: "12px", // Menyesuaikan border panel Anda
-		zIndex: "10",
-		touchAction: "none" // Mencegah scrolling browser saat ditarik
+		position: "absolute", bottom: "0", right: "0", width: "25px", height: "25px",
+		cursor: "nwse-resize", background: "linear-gradient(135deg, transparent 50%, var(--wp-border) 50%)",
+		borderBottomRightRadius: "12px", zIndex: "10", touchAction: "none"
 	});
-
-	// Tambahkan tuas ke dalam panel utama
 	panel.appendChild(resizeHandle);
 
 	let isResizing = false;
@@ -2718,36 +2680,22 @@
 
 	function startResize(e) {
 		isResizing = true;
-		e.stopPropagation(); // Mencegah event drag panel tumpang tindih
-		
+		e.stopPropagation(); 
 		const clientX = e.touches ? e.touches[0].clientX : e.clientX;
 		const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-		
-		startMouseX = clientX;
-		startMouseY = clientY;
-		
+		startMouseX = clientX; startMouseY = clientY;
 		const rect = panel.getBoundingClientRect();
-		startWidth = rect.width;
-		startHeight = rect.height;
-
-		// Matikan transisi sementara agar resize tidak delay (mulus)
+		startWidth = rect.width; startHeight = rect.height;
 		panel.style.transition = "none";
 	}
 
 	function doResize(e) {
 		if (!isResizing) return;
-		e.preventDefault(); // Mencegah layar HP ikut ter-scroll
-		
+		e.preventDefault(); 
 		const clientX = e.touches ? e.touches[0].clientX : e.clientX;
 		const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-		
-		const deltaX = clientX - startMouseX;
-		const deltaY = clientY - startMouseY;
-		
-		// Set batas minimal ukuran panel agar UI tidak hancur (misal: 300x250)
-		const newWidth = Math.max(300, startWidth + deltaX);
-		const newHeight = Math.max(250, startHeight + deltaY);
-		
+		const newWidth = Math.max(300, startWidth + (clientX - startMouseX));
+		const newHeight = Math.max(250, startHeight + (clientY - startMouseY));
 		panel.style.width = newWidth + "px";
 		panel.style.height = newHeight + "px";
 	}
@@ -2755,17 +2703,12 @@
 	function stopResize() {
 		if (!isResizing) return;
 		isResizing = false;
-		
-		// Nyalakan kembali transisi untuk fitur drag/minimize
-		panel.style.transition = "left .25s ease"; 
+		panel.style.transition = "left .25s ease, top .25s ease"; 
 	}
 
-	// Event Listener untuk Mouse (Jika dipakai di PC/Laptop)
 	resizeHandle.addEventListener("mousedown", startResize);
 	document.addEventListener("mousemove", doResize);
 	document.addEventListener("mouseup", stopResize);
-
-	// Event Listener untuk Layar Sentuh (Chrome Mobile)
 	resizeHandle.addEventListener("touchstart", startResize, { passive: false });
 	document.addEventListener("touchmove", doResize, { passive: false });
 	document.addEventListener("touchend", stopResize);
